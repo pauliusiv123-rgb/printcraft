@@ -2045,3 +2045,6 @@ comment menu	Edit	Bearbeiten
 signature pad	Type	Tippen
 action wizard	Start	Starten
 	Reopen the files that were open when PdfCraft last closed	Beim Start die Dateien wieder öffnen, die beim letzten Beenden von PdfCraft geöffnet waren
+	Clear Recent Files	Liste „Zuletzt geöffnet“ leeren
+	Remove from Recent	Aus „Zuletzt geöffnet“ entfernen
+	Remove {name} from Recent	{name} aus „Zuletzt geöffnet“ entfernen
