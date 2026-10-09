@@ -193,6 +193,9 @@ pub struct DocView {
     pub highlight_fields: bool,
     pub page_input: String,
     pub notice_dismissed: bool,
+    /// The file changed on disk while this document had unsaved changes: the notice bar asks
+    /// before replacing it (#431).
+    pub disk_changed: bool,
     /// Two-page view: show the first page alone, as a cover (View ▸ Page display).
     pub cover: bool,
     /// Previous view / Next view: pages visited before (and after, once going back).
@@ -351,6 +354,7 @@ impl DocView {
             highlight_fields: defaults.highlight_fields,
             page_input: "1".into(),
             notice_dismissed: false,
+            disk_changed: false,
             cover: false,
             back: Vec::new(),
             forward: Vec::new(),
@@ -427,6 +431,35 @@ impl DocView {
         self.goto = None;
         self.zoom_anchor = None;
         self.flash = None;
+    }
+
+    /// The document was replaced by a newer version of its file (#431). The reader's place
+    /// stays: zoom, layout, rotation, page, scroll, view history and the find bar, and the page
+    /// images on screen until their replacements are drawn, so nothing flashes. Everything that
+    /// pointed into the old version (a selected comment, a field being typed in, text being
+    /// edited, a drag, page selection) starts afresh, so no stale index reaches the new one.
+    pub fn document_replaced(&mut self, info: &DocInfo) {
+        let mut fresh = Self::new(self.id, info, ViewDefaults::default());
+        fresh.zoom = self.zoom;
+        fresh.fit = self.fit;
+        fresh.layout = self.layout;
+        fresh.rotation = self.rotation;
+        fresh.current = self.current;
+        fresh.organize = self.organize;
+        fresh.highlight_fields = self.highlight_fields;
+        fresh.notice_dismissed = self.notice_dismissed;
+        fresh.cover = self.cover;
+        fresh.back = std::mem::take(&mut self.back);
+        fresh.forward = std::mem::take(&mut self.forward);
+        fresh.find = self.find.take();
+        fresh.pages = std::mem::take(&mut self.pages);
+        fresh.thumbs = std::mem::take(&mut self.thumbs);
+        fresh.viewport_w = self.viewport_w;
+        fresh.viewport_h = self.viewport_h;
+        fresh.viewport_screen = self.viewport_screen;
+        *self = fresh;
+        // Marks the kept images out of date and clamps the page to the new page count.
+        self.document_changed(info);
     }
 
     /// Pages an organize command acts on: the selection, or the current page.
@@ -1235,6 +1268,10 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
     let secured = doc.security_summary().is_some_and(|s| !(s.owner || (s.permissions.modify() && s.permissions.assemble())));
     let repaired = !doc.repair_log().is_empty();
     match notices(view, doc, secured, repaired, crate::sign_ui::banner(&doc.signatures), ui, &t) {
+        #[cfg(not(target_arch = "wasm32"))]
+        Some(Notice::Reload) => app.watch.reload_request = Some(view.id),
+        #[cfg(target_arch = "wasm32")]
+        Some(Notice::Reload) => {}
         Some(Notice::Repairs) => app.dialog = Some(crate::Dialog::Properties(crate::PropsTab::Advanced)),
         Some(Notice::Security) => app.dialog = Some(crate::Dialog::Properties(crate::PropsTab::Security)),
         Some(Notice::Signatures) => app.right = Some(RightPanel::Signatures),
@@ -2338,6 +2375,8 @@ enum FieldMenu {
 
 /// What the notice bar's buttons ask for.
 enum Notice {
+    /// Reload the file that changed on disk, dropping unsaved changes.
+    Reload,
     Security,
     Signatures,
     Repairs,
@@ -2358,6 +2397,27 @@ fn notices(
 ) -> Option<Notice> {
     let info = &doc.info;
     let xfa = doc.xfa.as_ref();
+    // The file changed on disk while this document has unsaved changes (#431): ask before
+    // replacing it, ahead of every other notice.
+    if view.disk_changed {
+        let mut reload = false;
+        egui::Frame::NONE.fill(t.accent_soft).inner_margin(egui::Margin::symmetric(14, 7)).show(ui, |ui| {
+            ui.horizontal(|ui| {
+                ui.add(icons::image("rotate-cw", 16.0, t.accent_text));
+                ui.label(
+                    egui::RichText::new(tl!("This file changed on disk. Reload it to see the new version; your unsaved changes will be lost."))
+                        .color(t.text),
+                );
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    if icons::button(ui, "x", 22.0, false, tl!("Dismiss")).clicked() {
+                        view.disk_changed = false;
+                    }
+                    reload = crate::widgets::pill_button(ui, tl!("Reload"), false).clicked();
+                });
+            });
+        });
+        return reload.then_some(Notice::Reload);
+    }
     if let Some((icon, color, template, arg)) = signed {
         let mut open = false;
         egui::Frame::NONE.fill(t.accent_soft).inner_margin(egui::Margin::symmetric(14, 7)).show(ui, |ui| {
