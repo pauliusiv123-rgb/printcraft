@@ -153,20 +153,26 @@ impl ObjectSelection {
         Edit::MoveObjects { page, objects: self.selected.iter().map(|o| o.target).collect(), offset }
     }
 
-    /// The deletion of the selection as one undo step. Vector paths go with the images beside
-    /// them in one edit, which text and added items can't join; without a path, paragraphs,
-    /// images and added items go as [`delete_edit`] says. The selection stays until the edit
-    /// applies: `prepare` clears it when the document changes, and a refused delete keeps it.
+    /// Whether [`Self::delete`] acts: vector paths can't go in one step with text or added items.
+    fn deletable(&self) -> bool {
+        let any = |kinds: &[ObjectKind]| self.selected.iter().any(|o| kinds.contains(&o.target.kind));
+        !(any(&[ObjectKind::Path]) && any(&[ObjectKind::Text, ObjectKind::Added]))
+    }
+
+    /// The deletion of the selection as one undo step. Vector paths and images go in one edit,
+    /// one splice of the page's content; a selection with a paragraph or an added item (and so
+    /// no path) goes as [`delete_edit`] says. The selection stays until the edit applies:
+    /// `prepare` clears it when the document changes, and a refused delete keeps it.
     fn delete(&mut self, page: usize) -> Option<Edit> {
-        let targets: Vec<ObjectTarget> = self.selected.iter().map(|o| o.target).collect();
-        if !targets.iter().any(|t| t.kind == ObjectKind::Path) {
-            return delete_edit(page, targets);
-        }
-        if targets.iter().any(|t| matches!(t.kind, ObjectKind::Text | ObjectKind::Added)) {
+        if !self.deletable() {
             self.notice = Some(tl!("Text and added items can't be deleted with this selection.").into());
             return None;
         }
-        Some(Edit::DeleteObjects { page, objects: targets })
+        let targets: Vec<ObjectTarget> = self.selected.iter().map(|o| o.target).collect();
+        if !targets.is_empty() && targets.iter().all(|t| matches!(t.kind, ObjectKind::Path | ObjectKind::Image)) {
+            return Some(Edit::DeleteObjects { page, objects: targets });
+        }
+        delete_edit(page, targets)
     }
 
     fn inventory(&mut self, doc: &Document, page: usize) -> Result<Vec<EditableObject>, String> {
@@ -661,8 +667,7 @@ pub(crate) fn context_menu(ui: &mut egui::Ui, doc: &Document, view: &mut DocView
         });
     }
     ui.separator();
-    let deletable = s.selected.iter().all(|o| matches!(o.target.kind, ObjectKind::Path | ObjectKind::Image));
-    if ui.add_enabled(can_modify && deletable, egui::Button::new(tl!("Delete"))).clicked() {
+    if ui.add_enabled(can_modify && s.deletable(), egui::Button::new(tl!("Delete"))).clicked() {
         edit = s.delete(page);
         ui.close();
     }

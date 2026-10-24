@@ -66,12 +66,13 @@ its other objects can still be selected.
   grid; Escape closes the grid and keeps the selection. A pick recolours every selected path that
   paints that part, as one undo step, and the selection stays. The new colour is DeviceRGB whatever
   the path used: CMYK, spot and pattern colours are replaced.
-- **Delete.** Delete or Backspace removes the selected paths, images and Form artwork in one step,
-  leaving the graphics state and marked content around them. A selection with paths and text or
-  added items shows a notice and deletes nothing; without a path, the selected paragraphs, images
-  and added items go in one step ("Delete content"). The keys are left alone while typing, in
-  Organize Pages, and while the pointer is over a panel rather than the page (the Pages panel
-  deletes pages with them); move the pointer back over the page, or use right-click ▸ Delete.
+- **Delete.** Delete or Backspace removes the selected paths, images and Form artwork in one step
+  and one rewrite of the page, leaving the graphics state and marked content around them. A
+  selection with paths and text or added items shows a notice and deletes nothing; paragraphs and
+  added items, with any images beside them, go in one undo step. The keys are left
+  alone while typing, in Organize Pages, and while the pointer is over a panel rather than the page
+  (the Pages panel deletes pages with them); move the pointer back over the page, or use
+  right-click ▸ Delete.
 
 ## The selection's menu
 
@@ -88,7 +89,8 @@ Right-click the page the selection is on:
   edge is Left). Sizes are kept.
 - **Distribute ▸ Horizontally, Vertically**, for three or more: the gaps become equal and the
   outermost two stay put.
-- **Delete**, when the selection holds only vector paths, images and Form artwork.
+- **Delete**, which deletes what the Delete key would: anything but vector paths with text or
+  added items.
 
 Each is one undo step, and only the content streams that change become new objects. A refusal is
 shown as a notice and changes nothing. Arrange refuses text, items added in PdfCraft and PdfCraft's

@@ -579,6 +579,30 @@ fn delete_removes_the_selected_path_and_image_in_one_step() {
     assert_eq!(objects(&h), before);
 }
 
+/// Images without a path (here Form artwork, the same object kind as a raster image) still go in
+/// one splice, as the object_delete tool deletes them, not one rewrite of the page per image.
+#[test]
+fn delete_removes_selected_images_alone_in_one_splice() {
+    // The figure again, 240..300 across and 270..300 down.
+    let mut h = harness_document(false, false, " q 1 0 0 1 240 200 cm /Figure Do Q");
+    let before = objects(&h);
+    assert_eq!(before.iter().filter(|o| o.target.kind == ObjectKind::Image).count(), 2, "{before:?}");
+    for (x, y) in [(60.0, 145.0), (270.0, 285.0)] {
+        let p = at(&h, x, y);
+        click(&mut h, p, Modifiers::SHIFT);
+    }
+    h.get_by_label("2 objects selected");
+    h.key_press(Key::Delete);
+    h.run_steps(4);
+    let after = objects(&h);
+    assert!(after.iter().all(|o| matches!(o.target.kind, ObjectKind::Text | ObjectKind::Added)), "{after:?}");
+    assert_eq!(after.len(), before.len() - 2);
+    assert_eq!(undo_label(&h).as_deref(), Some("Delete objects"));
+    assert!(nothing_selected(&h));
+    undo(&mut h);
+    assert_eq!(objects(&h), before);
+}
+
 #[test]
 fn delete_with_text_in_the_selection_explains_and_keeps_everything() {
     let mut h = harness_document(false, false, " 0.8 0.9 1 rg 300 100 60 40 re f");
@@ -874,16 +898,31 @@ fn delete_in_the_page_menu_removes_the_selection_in_one_step() {
     assert_eq!(objects(&h), before);
 }
 
+/// The menu's Delete acts whenever the key does: on text, but not on text with a path.
 #[test]
-fn the_page_menu_leaves_text_out_of_arrange_and_delete() {
-    let mut h = harness();
-    let headline = at(&h, 55.0, 70.0);
+fn the_page_menu_leaves_text_out_of_arrange_and_deletes_it_only_without_paths() {
+    let mut h = harness_document(false, false, " 0.8 0.9 1 rg 300 100 60 40 re f");
+    let before = objects(&h);
+    let (headline, panel) = (at(&h, 55.0, 70.0), at(&h, 330.0, 380.0));
     click(&mut h, headline, Modifiers::SHIFT);
     h.get_by_label("1 object selected");
     right_click(&mut h, headline);
     assert!(disabled(&h, "Arrange ⏵") && disabled(&h, "Align ⏵"));
+    h.get_all_by_label("Delete").last().unwrap().click();
+    h.run_steps(4);
+    let after = objects(&h);
+    assert!(after.iter().all(|o| o.text.as_deref() != Some("Group headline")), "{after:?}");
+    assert_eq!(after.len(), before.len() - 1);
+    assert!(nothing_selected(&h));
+    undo(&mut h);
+    assert_eq!(objects(&h), before);
+    for p in [headline, panel] {
+        click(&mut h, p, Modifiers::SHIFT);
+    }
+    h.get_by_label("2 objects selected");
+    right_click(&mut h, panel);
     assert!(h.get_all_by_label("Delete").last().unwrap().accesskit_node().is_disabled());
-    assert!(!dirty(&h));
+    assert_eq!(objects(&h), before);
 }
 
 #[test]
