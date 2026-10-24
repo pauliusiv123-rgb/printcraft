@@ -4502,9 +4502,10 @@ impl Session {
         guard(|| write_full(&cos, &opts)).map_err(EditError::Write)?.map(Arc::new).map_err(|e| EditError::Write(e.to_string()))
     }
 
-    /// Check that `bytes`, from [`Self::save_bytes`] or [`Self::save_full_bytes`], reopen as this
-    /// document before they are written (#1698): [`Self::mark_saved`] only finds out after the
-    /// file has been replaced. Same error as `mark_saved`.
+    /// Check that `bytes`, from [`Self::save_bytes`], [`Self::save_full_bytes`] or
+    /// [`Self::save_linearized_bytes`], reopen as this document before they are written (#1698):
+    /// [`Self::mark_saved`] only finds out after the file has been replaced. Same error as
+    /// `mark_saved`.
     pub fn check_save(&self, id: DocId, bytes: &Arc<Vec<u8>>) -> Result<(), EditError> {
         let doc = self.get(id).ok_or(EditError::NoDocument)?;
         let Some(editor) = doc.editor.as_ref() else { return Ok(()) };
