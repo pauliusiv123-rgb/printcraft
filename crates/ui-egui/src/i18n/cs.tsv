@@ -139,7 +139,10 @@
 	Fit one full page	Celá jedna stránka
 	Used when a PDF doesn't ask for a layout or zoom. Continuous scrolling never snaps between pages.	Používá se, když PDF nepožaduje rozložení ani zvětšení. Plynulé posouvání mezi stránkami neskáče.
 	Reopen the files that were open when PdfCraft last closed	Znovu otevřít soubory, které byly otevřené při posledním zavření aplikace PdfCraft
+	Restore the last view (page, zoom and page display) when a document is opened again	Při opětovném otevření dokumentu obnovit poslední zobrazení (stránku, zvětšení a rozložení stránek)
 	Reload documents when their files change on disk	Znovu načítat dokumenty při změně jejich souborů na disku
+	Don't show again	Znovu nezobrazovat
+	Show a notice when a document is secured	Zobrazit upozornění, když je dokument zabezpečený
 	Always use my default zoom and page layout	Vždy používat mé výchozí zvětšení a rozvržení stránky
 	This file changed on disk. Reload shows the new version and drops your unsaved changes; Save replaces it with this version.	Tento soubor se na disku změnil. Znovu načíst zobrazí novou verzi a zahodí neuložené změny; Uložit ji nahradí touto verzí.
 	Reload	Znovu načíst
@@ -692,6 +695,7 @@ key	Space	Mezerník
 	Discard private data of other applications	Zahodit soukromá data jiných aplikací
 	Discard hidden text	Zahodit skrytý text
 	Use Flate to encode streams that are not encoded	Kódovat nekódované proudy metodou Flate
+	In streams that use LZW encoding, use Flate instead	Proudy kódované LZW kódovat metodou Flate
 	Remove invalid links and bookmarks	Odebrat neplatné odkazy a záložky
 	Remove unreferenced named destinations	Odebrat nepoužívané pojmenované cíle
 	Compress document structure (object streams)	Komprimovat strukturu dokumentu (proudy objektů)
@@ -2087,6 +2091,10 @@ key	Space	Mezerník
 	Perimeter	Obvod
 	Area	Plocha
 	Drawing scale	Měřítko výkresu
+	Scale	Měřítko
+	Common scales	Běžná měřítka
+	Enter a scale such as 1:50.	Zadejte měřítko, například 1:50.
+	Applying a scale switches units to m / mm.	Použití měřítka přepne jednotky na m / mm.
 	Snapping	Přichytávání
 	Export measurements	Exportovat měření
 	Open a PDF to measure it.	Otevřete PDF, které chcete měřit.
@@ -2555,6 +2563,11 @@ animation effects	Off	Vypnuto
 	Make properties default	Nastavit vlastnosti jako výchozí
 	Pages selected	Vybrané stránky
 	Page properties	Vlastnosti stránky
+	Attach a file…	Připojit soubor…
+	Delete attachment	Odstranit přílohu
+	Attaching files is not available on the web yet	Připojování souborů zatím na webu není k dispozici
+	Attach {name}	Připojit {name}
+	Delete attachment {key}	Odstranit přílohu {key}
 	Font	Písmo
 	Bulleted list	Odrážkový seznam
 	Numbered list	Číslovaný seznam
@@ -2615,6 +2628,7 @@ animation effects	Off	Vypnuto
 	The RSA signature's DigestInfo has no NULL parameter (older signers write it so); it was read anyway.	DigestInfo podpisu RSA nemá parametr NULL (starší podepisovací programy jej tak zapisují); přesto byl načten.
 	The certificate of {} does not allow this many CA certificates below it (path length), so it is not used to vouch for {}.	Certifikát {} nepovoluje pod sebou tolik certifikátů CA (délka cesty), proto se nepoužije k ručení za {}.
 	The certificate of {} is not a CA certificate that may issue certificates, so it is not used to vouch for {}.	Certifikát {} není certifikát CA, který smí vydávat certifikáty, proto se nepoužije k ručení za {}.
+	The certificate of {} has critical extensions PdfCraft does not recognize, so it is not used to vouch for {}.	Certifikát {} má kritická rozšíření, která PdfCraft nezná, proto se nepoužije k ručení za {}.
 	The certificate of {} was not valid at the time of signing, so it is not used to vouch for {}.	Certifikát {} nebyl v době podpisu platný, proto se nepoužije k ručení za {}.
 	The checker found problems which may prevent the document from being fully accessible.	Kontrola našla problémy, které mohou bránit plné přístupnosti dokumentu.
 	The document has been altered or corrupted since the signature was applied.	Dokument byl od připojení podpisu změněn nebo poškozen.
@@ -2657,6 +2671,7 @@ animation effects	Off	Vypnuto
 	The signer's identity is unknown because it has not been included in your list of trusted certificates and none of its parent certificates are trusted certificates.	Identita podepisující osoby je neznámá, protože není ve vašem seznamu důvěryhodných certifikátů a žádný z jejích nadřazených certifikátů není důvěryhodný.
 	The signer's identity is valid.	Identita podepisující osoby je platná.
 	The timestamp authority's certificate was not valid at the time of timestamping.	Certifikát autority časových razítek nebyl v době vystavení razítka platný.
+	The timestamp authority's certificate is not issued for time stamping.	Certifikát autority časových razítek není vystaven pro vydávání časových razítek.
 	The timestamp contents are not hexadecimal.	Obsah časového razítka není šestnáctkový.
 	The timestamp has no valid byte range.	Časové razítko nemá platný rozsah bajtů.
 	The timestamp token could not be read ({}).	Časové razítko nebylo možné načíst ({}).
@@ -2820,3 +2835,6 @@ certificate	Version	Verze
 	field names can't contain a period: {name}	názvy polí nesmějí obsahovat tečku: {name}
 	two cells would both be named {name}	dvě buňky by se jmenovaly {name}
 	a field named {name} already exists	pole s názvem {name} už existuje
+
+# Date picker: Today button (#4274) (AI-assisted, not separately native-reviewed)
+	Today	Dnes
