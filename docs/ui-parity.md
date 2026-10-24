@@ -1,6 +1,6 @@
 # UI and interaction parity
 
-> **Last reviewed:** 2026-10-13 · **Last updated:** 2026-10-22 · **Change:** minor (vector paths in the Edit tool, align, distribute and arrange page objects from the selection's right-click menu, #1540; commands, tools and the View area recounted 2026-10-22; earlier: column select #740, multi-object move #844, Shift-⌘-G #810 fixed) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
+> **Last reviewed:** 2026-10-13 · **Last updated:** 2026-10-24 · **Change:** minor (vector paths in the Edit tool, align, distribute and arrange page objects from the selection's right-click menu, #1540; commands, tools and the View area recounted 2026-10-24; earlier: column select #740, multi-object move #844, Shift-⌘-G #810 fixed) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 > **Last reviewed:** 2026-10-21 · **Last updated:** 2026-10-21 · **Change:** minor (Pages inspector thumbnail size slider and buttons #3808; full screen presents one page at a time #1459; the selected field nudges with the arrow keys in Prepare a form #2608) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 
 How PdfCraft's tools, panels, shortcuts and feel compare with Acrobat Pro's current interface (the
@@ -12,13 +12,13 @@ interface is copied. Gaps ranked in [gaps.md](gaps.md).
 
 ## Measured
 
-- **204 registered commands** (`crates/engine/src/commands.rs`), every one in the menus, the
+- **205 registered commands** (`crates/engine/src/commands.rs`), every one in the menus, the
   command palette and the automation `command_run` tool; menus are generated from the registry
   (`view.menus-from-registry`).
-- **180 automation tools** (`crates/automation/src/tools.rs`), so every UI action can be checked
+- **184 automation tools** (`crates/automation/src/tools.rs`), so every UI action can be checked
   headlessly.
 - **View area of the checklist: 64.2% breadth** (54 shipped, 14 partial of 95). All three counted on
-  2026-10-22.
+  2026-10-24.
 
 No dump of Acrobat's menu tree has been diffed against the registry yet (gap 24).
 
@@ -83,6 +83,7 @@ No dump of Acrobat's menu tree has been diffed against the registry yet (gap 24)
 
 | Date | Change | Summary |
 |---|---|---|
+| 2026-10-24 | minor | After merging `upstream/main` at d4454108: commands (205), automation tools (184) and the View area (64.2%, unchanged, `cargo xtask parity`) recounted |
 | 2026-10-22 | minor | After merging `upstream/main` at 80b7d215: commands (204), automation tools (180) and the View area (64.2%, `cargo xtask parity`) recounted |
 | 2026-10-21 | minor | Pages inspector thumbnail sizing (#3808), separate from page and Organize zoom; view setting retained on reload and exposed through UI control. Not persisted between sessions. |
 | 2026-10-20 | minor | After merging `upstream/main` at 22bedbf2: commands (201), automation tools (176) and the View area (63.2%, `cargo xtask parity`) recounted |

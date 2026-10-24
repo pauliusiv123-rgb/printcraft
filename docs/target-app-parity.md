@@ -1,6 +1,6 @@
 # PdfCraft parity with Adobe Acrobat Pro
 
-> **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-22 · **Change:** minor (vector editing, align, distribute and arrange shipped, #1540; checklist recounted with `cargo xtask parity`, last on 2026-10-22: 60.4% unweighted, ≈ 70% tier-weighted; readiness, scores and hours not re-judged); earlier: web printing shipped, gap 4 closed, scores not re-judged; exclusive image-crop resize follow-up; minor (document-font subset completion, source styles and curved/shared image clips in the contributor fork; closed issues synced, scores not re-judged: #774, #756, #740, #759, #799–#821, #825, #844; earlier: readiness table with hours per audience; full number restated as the standard's additive weighted sum, 47% → 49%; earlier: second look: cross-cutting double count removed, mainstream-practitioner number added, core-workflow gate applied → alpha) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
+> **Last reviewed:** 2026-10-10 · **Last updated:** 2026-10-24 · **Change:** minor (205 registered commands and 184 automation tools recounted 2026-10-24; vector editing, align, distribute and arrange shipped, #1540; checklist recounted with `cargo xtask parity`, last on 2026-10-22: 60.4% unweighted, ≈ 70% tier-weighted; readiness, scores and hours not re-judged); earlier: web printing shipped, gap 4 closed, scores not re-judged; exclusive image-crop resize follow-up; minor (document-font subset completion, source styles and curved/shared image clips in the contributor fork; closed issues synced, scores not re-judged: #774, #756, #740, #759, #799–#821, #825, #844; earlier: readiness table with hours per audience; full number restated as the standard's additive weighted sum, 47% → 49%; earlier: second look: cross-cutting double count removed, mainstream-practitioner number added, core-workflow gate applied → alpha) · **Target:** Adobe Acrobat Pro (Acrobat DC, continuous track 26.002.21931, macOS)
 
 > **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** minor (M12 #3673: Character encoding CJK mapping routes corrected; scores and estimates unchanged)
 
@@ -70,7 +70,8 @@ never been measured side by side with Acrobat, and the first public releases (0.
   written from Acrobat's public documentation, not diffed against a menu dump, so it can miss
   features; that risk is one of the gaps.
 - **Ready for real work by judgement, from evidence:** the code (152k lines of Rust in `crates/`,
-  `apps/` and `xtask`, 1,765 tests, 184 registered commands, 141 automation tools); the vendored
+  `apps/` and `xtask` and 1,765 tests on 2026-10-10; 205 registered commands and 184 automation
+  tools on 2026-10-24); the vendored
   renderer's patch list (`vendor/README.md`); user reports on GitHub (245 open, 107 closed issues on
   2026-10-10); release packaging (`.github/workflows/release.yml`); and knowledge of Acrobat Pro's
   feature set from Adobe's public documentation.
@@ -217,7 +218,7 @@ full parity in that area.
 | K Optimize and standards | 58 | 16 | 10 | 36.2% | 20% | 65–115 | Reduce File Size and the Optimizer (images, discards, clean-up, space audit); PDF/A-2b/3b verify and convert (partial). Missing: Preflight (profiles, fixups, reports), PDF/A-1/4 and a/u levels, PDF/X, PDF/UA, PDF/E, PDF/VT, transparency flattening, font unembedding, monochrome JBIG2/CCITT |
 | L Print | 39 | 17 | 0 | 43.6% | 35% | 30–55 | Acrobat's sizing, n-up, booklet, poster, comments & forms, preview, print-ready PDF, CUPS on macOS/Linux, the Windows spooler (#756) and the browser's print dialog on the web. Missing: print as image, PostScript, all print-production tools (output preview, separations, ink manager, printer marks, colour conversion) |
 | M Accessibility | 61 | 39 | 10 | 72.1% | 30% | 40–70 | Accessibility Checker (all 32 rules, report, fixes), alternate text, title and language. Missing: autotag, Tags/Order/Content panels, Reading Order tool, artifact marking, table editor, Read Out Loud, full keyboard operation of the app, screen-reader audit |
-| N Automation, preferences, misc | 75 | 21 | 8 | 33.3% | 35% | 25–45 | CLI, MCP, UI control channel, 180 automation tools, Action Wizard (run, create), compare (text, visual, report, side by side, Text/Visual filter). Missing: most Preferences pages, Acrobat's finer compare filters, Action Wizard management, custom commands, AI providers, rich media/3D, hosted web app |
+| N Automation, preferences, misc | 75 | 21 | 8 | 33.3% | 35% | 25–45 | CLI, MCP, UI control channel, 184 automation tools, Action Wizard (run, create), compare (text, visual, report, side by side, Text/Visual filter). Missing: most Preferences pages, Acrobat's finer compare filters, Action Wizard management, custom commands, AI providers, rich media/3D, hosted web app |
 | **All** | **817** | **444** | **99** | **60.4%** | **≈ 49%** | **610–1,100** | Plus 175–325 h of cross-cutting work (dimension table) |
 
 Shipped features rest on thin evidence: 119 of 444 cite exactly one test (counted 2026-10-22), and
@@ -300,6 +301,7 @@ licensed OCR or AI model.
 
 | Date | Change | Summary |
 |---|---|---|
+| 2026-10-24 | minor | After merging `upstream/main` at d4454108: registered commands (205, `crates/engine/src/commands.rs`) and automation tools (184, `crates/automation/src/tools.rs`) recounted; the evidence paragraph had still listed the 2026-10-10 counts (184 and 141). Lines of code and tests not recounted |
 | 2026-10-22 | minor | Checklist recounted with `cargo xtask parity` after merging `upstream/main` at 80b7d215 into the vector-editing work (#1540): 840 features, 817 in scope, 444 shipped + 99 partial = 60.4%, P0 94.6%, P1 65.5%, P2 20.1%, tier-weighted ≈ 70%; area breadths, the one-test count (119 of 444) and the automation tool count (180) updated. Readiness, scores and hours not re-judged |
 | 2026-10-20 | minor | Checklist recounted with `cargo xtask parity` after merging `upstream/main` at 22bedbf2 into the vector-editing work (#1540); the 2026-10-13 hand count had drifted: 838 features, 815 in scope, 441 shipped + 94 partial = 59.9%, P0 94.6%, P1 65.5%, P2 18.0%, tier-weighted ≈ 70%; area breadths, the one-test count (126 of 441) and the automation tool count (176) updated. The mainstream/specialist split is not recounted. Readiness, scores and hours not re-judged |
 | 2026-10-20 | minor | M12 #3673: the Character encoding rule accepts Identity-H/V fonts with Adobe CJK collections, or a predefined non-Identity CMap, while rejecting unknown names and foreign registries. Synthetic checker and read-only automation regressions passed after failing before the fix; per-glyph mapping validation and embedded-font extraction remain separate. Breadth, readiness and hours unchanged. |
