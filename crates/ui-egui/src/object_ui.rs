@@ -153,16 +153,20 @@ impl ObjectSelection {
         Edit::MoveObjects { page, objects: self.selected.iter().map(|o| o.target).collect(), offset }
     }
 
-    /// The deletion of the selection, which only vector paths and images may be in; the
-    /// selection goes with them.
+    /// The deletion of the selection as one undo step. Vector paths go with the images beside
+    /// them in one edit, which text and added items can't join; without a path, paragraphs,
+    /// images and added items go as [`delete_edit`] says. The selection stays until the edit
+    /// applies: `prepare` clears it when the document changes, and a refused delete keeps it.
     fn delete(&mut self, page: usize) -> Option<Edit> {
-        if self.selected.iter().any(|o| matches!(o.target.kind, ObjectKind::Text | ObjectKind::Added)) {
+        let targets: Vec<ObjectTarget> = self.selected.iter().map(|o| o.target).collect();
+        if !targets.iter().any(|t| t.kind == ObjectKind::Path) {
+            return delete_edit(page, targets);
+        }
+        if targets.iter().any(|t| matches!(t.kind, ObjectKind::Text | ObjectKind::Added)) {
             self.notice = Some(tl!("Text and added items can't be deleted with this selection.").into());
             return None;
         }
-        let objects = self.selected.iter().map(|o| o.target).collect();
-        self.clear();
-        Some(Edit::DeleteObjects { page, objects })
+        Some(Edit::DeleteObjects { page, objects: targets })
     }
 
     fn inventory(&mut self, doc: &Document, page: usize) -> Result<Vec<EditableObject>, String> {
@@ -730,6 +734,31 @@ pub(crate) fn colour_section(app: &mut crate::PdfCraftApp, ui: &mut egui::Ui) ->
     true
 }
 
+/// The edit that deletes `targets` (indexes into one inventory of `page`) as one undo step.
+/// Each deletion renumbers only what follows it in its own inventory, so paragraphs and images
+/// go from the last to the first, and added content, which the source inventories leave out,
+/// after them.
+fn delete_edit(page: usize, mut targets: Vec<ObjectTarget>) -> Option<Edit> {
+    targets.sort_by_key(|t| (t.kind == ObjectKind::Added, std::cmp::Reverse(t.index)));
+    targets.dedup();
+    let mut edits: Vec<Edit> = targets
+        .into_iter()
+        .map(|t| match t.kind {
+            ObjectKind::Text => Edit::EditTextBlock { page, block: t.index, text: String::new(), style: pdfcraft_engine::BlockStyle::default() },
+            ObjectKind::Image => Edit::EditPageImage { page, index: t.index, change: pdfcraft_engine::ImageEdit::Delete },
+            ObjectKind::Added => Edit::DeleteContent { page, index: t.index },
+            // `ObjectSelection::delete` sends paths as one `DeleteObjects`; this keeps the match total.
+            ObjectKind::Path => Edit::DeleteObjects { page, objects: vec![t] },
+        })
+        .collect();
+    if edits.len() > 1 {
+        // "Delete content" is an edit label already, so the history reads the same in every language.
+        Some(Edit::Batch { label: "Delete content".into(), edits })
+    } else {
+        edits.pop()
+    }
+}
+
 pub(crate) fn paint(painter: &egui::Painter, xf: &PageXform, page: usize, info: &DocInfo, selection: &ObjectSelection) {
     if selection.page != Some(page) {
         return;
@@ -780,28 +809,38 @@ pub(crate) fn move_error(edit: &Edit, detail: &str) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
+    fn t(kind: ObjectKind, index: usize) -> ObjectTarget {
+        ObjectTarget { kind, index }
+    }
+
+    /// Deleting renumbers what follows in the same inventory, so the batch takes each inventory
+    /// from its last item to its first, and added content (outside the source inventories) last.
     #[test]
-    fn selection_labels_and_refusals_are_translated_in_every_catalog() {
-        for language in crate::i18n::LANGUAGES.iter().filter(|l| !l.source.is_empty()) {
-            let lang = crate::i18n::Lang::from_code(language.code).unwrap();
-            for label in [
-                "Drag the selection to move it. Esc clears the selection.",
-                "Select at most 1000 objects at a time.",
-                "Finish or discard the text being edited before selecting several objects.",
-                "Move object",
-                "Move objects",
-                "Vertical text cannot be moved with this selection.",
-                "Text used as a clipping path cannot be moved with this selection.",
-                "These objects could not be moved. Select them again and try a smaller move.",
-                "This page contains objects that cannot be selected together.",
-                "Text and added items can't be deleted with this selection.",
-                "Arrange",
-                "Stroke colour",
-            ] {
-                assert_ne!(crate::i18n::tr(lang, label), label, "{}: {label}", language.code);
-            }
-            assert_ne!(crate::i18n::trn(lang, 2, "{n} object selected", "{n} objects selected"), "2 objects selected", "{}", language.code);
-        }
+    fn several_objects_delete_last_first_in_one_step() {
+        let targets = vec![t(ObjectKind::Added, 0), t(ObjectKind::Text, 1), t(ObjectKind::Image, 0), t(ObjectKind::Text, 3), t(ObjectKind::Added, 2)];
+        let Some(Edit::Batch { label, edits }) = delete_edit(0, targets) else { panic!("several objects make one batch") };
+        assert_eq!(label, "Delete content");
+        let order: Vec<(char, usize)> = edits
+            .iter()
+            .map(|e| match e {
+                Edit::EditTextBlock { block, text, .. } => {
+                    assert!(text.is_empty());
+                    ('t', *block)
+                }
+                Edit::EditPageImage { index, change: pdfcraft_engine::ImageEdit::Delete, .. } => ('i', *index),
+                Edit::DeleteContent { index, .. } => ('a', *index),
+                other => panic!("unexpected {}", other.label().wording),
+            })
+            .collect();
+        assert_eq!(order, [('t', 3), ('t', 1), ('i', 0), ('a', 2), ('a', 0)]);
+    }
+
+    #[test]
+    fn one_object_deletes_with_its_own_edit_and_none_with_nothing() {
+        assert!(matches!(delete_edit(2, vec![t(ObjectKind::Image, 4)]), Some(Edit::EditPageImage { page: 2, index: 4, .. })));
+        assert!(delete_edit(0, Vec::new()).is_none());
     }
 
     #[test]

@@ -67,10 +67,11 @@ its other objects can still be selected.
   paints that part, as one undo step, and the selection stays. The new colour is DeviceRGB whatever
   the path used: CMYK, spot and pattern colours are replaced.
 - **Delete.** Delete or Backspace removes the selected paths, images and Form artwork in one step,
-  leaving the graphics state and marked content around them. A selection with text or added items
-  shows a notice and deletes nothing. The keys are left alone while typing, in Organize Pages, and
-  while the pointer is over a panel rather than the page (the Pages panel deletes pages with them);
-  move the pointer back over the page, or use right-click ▸ Delete.
+  leaving the graphics state and marked content around them. A selection with paths and text or
+  added items shows a notice and deletes nothing; without a path, the selected paragraphs, images
+  and added items go in one step ("Delete content"). The keys are left alone while typing, in
+  Organize Pages, and while the pointer is over a panel rather than the page (the Pages panel
+  deletes pages with them); move the pointer back over the page, or use right-click ▸ Delete.
 
 ## The selection's menu
 
@@ -173,6 +174,6 @@ rotated/cropped/UserUnit pages and refusal), `crates/edit/src/paths_tests.rs` an
 `path_edit_tests.rs` (finding, moving, resizing, recolouring and deleting paths), `align.rs`,
 `arrange_tests.rs` and `delete.rs` (alignment, painting order and byte-preserving deletion),
 `crates/engine/src/tests.rs` (permissions, history, rendering and save/reopen),
-`crates/automation/tests/automation.rs` (generation guards, hostile references and save/reopen), and
-`crates/ui-egui/tests/object_selection.rs` (real-shell selection, gestures, the Delete key, the
+`crates/automation/tests/it/automation.rs` (generation guards, hostile references and save/reopen), and
+`crates/ui-egui/tests/it/object_selection.rs` (real-shell selection, gestures, the Delete key, the
 selection's menu and the colour swatches).
